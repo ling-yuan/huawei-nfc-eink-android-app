@@ -13,9 +13,14 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,6 +45,11 @@ public final class BleLink {
     public static final UUID CTRL = UUID.fromString("6f4c0002-8a2e-4c91-b7d4-1e5a9c30f001");
     public static final UUID IMG = UUID.fromString("6f4c0003-8a2e-4c91-b7d4-1e5a9c30f001");
     public static final UUID CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    /** 128-bit service UUID on air, little-endian. */
+    private static final byte[] SVC_LE = new byte[] {
+            0x01, (byte) 0xf0, 0x30, (byte) 0x9c, 0x5a, 0x1e, (byte) 0xd4, (byte) 0xb7,
+            (byte) 0x91, 0x4c, 0x2e, (byte) 0x8a, 0x01, 0x00, 0x4c, 0x6f
+    };
 
     public static final byte OP_SET_IDLE = 0x01;
     public static final byte OP_BEGIN = 0x02;
@@ -96,6 +106,10 @@ public final class BleLink {
     private volatile boolean cancel;
     private volatile boolean scanning;
     private volatile int attPayload = 20;
+    private volatile int imgChunk = 20;
+    private boolean bondReceiverRegistered;
+    private CountDownLatch gattLatch;
+    private final AtomicInteger gattWriteStatus = new AtomicInteger(-1);
     private final Map<String, DeviceRow> found = new LinkedHashMap<>();
     private CountDownLatch resultLatch;
     private final AtomicInteger lastStatus = new AtomicInteger(-1);
@@ -106,19 +120,8 @@ public final class BleLink {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
-            if (device == null) return;
-            String name = device.getName();
-            if (name == null && result.getScanRecord() != null) name = result.getScanRecord().getDeviceName();
-            boolean match = DEVICE_NAME.equals(name);
-            if (!match && result.getScanRecord() != null && result.getScanRecord().getServiceUuids() != null) {
-                for (ParcelUuid uuid : result.getScanRecord().getServiceUuids()) {
-                    if (SVC.equals(uuid.getUuid())) {
-                        match = true;
-                        break;
-                    }
-                }
-            }
-            if (!match) return;
+            if (device == null || !isInkSight(device, result.getScanRecord())) return;
+            String name = visibleName(device, result.getScanRecord());
             synchronized (found) {
                 found.put(device.getAddress(), new DeviceRow(device.getAddress(), name, device.getBondState() == BluetoothDevice.BOND_BONDED));
             }
@@ -142,11 +145,12 @@ public final class BleLink {
                     listener.onPanelChanged("配对中");
                     listener.onLog("蓝牙已连接：" + g.getDevice().getAddress());
                 });
-                g.requestMtu(517);
+                beginAfterBond(g);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 connected = false;
                 ready = false;
                 attPayload = 20;
+                imgChunk = 20;
                 ctrl = null;
                 img = null;
                 post(() -> {
@@ -161,8 +165,10 @@ public final class BleLink {
 
         @Override
         public void onMtuChanged(BluetoothGatt g, int mtu, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS && mtu >= 23)
+            if (status == BluetoothGatt.GATT_SUCCESS && mtu >= 23) {
                 attPayload = Math.min(500, mtu - 3);
+                imgChunk = attPayload;
+            }
             g.discoverServices();
         }
 
@@ -212,8 +218,9 @@ public final class BleLink {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt g, BluetoothGattCharacteristic characteristic, int status) {
-            CountDownLatch latch = resultLatch;
-            if (IMG.equals(characteristic.getUuid()) && latch != null) latch.countDown();
+            gattWriteStatus.set(status);
+            CountDownLatch latch = gattLatch;
+            if (latch != null) latch.countDown();
         }
     };
 
@@ -228,6 +235,7 @@ public final class BleLink {
     public void detach() {
         stopScan();
         disconnect();
+        unregisterBondReceiver();
         listener = noop();
     }
 
@@ -264,10 +272,11 @@ public final class BleLink {
             settings.setBleAddress(address);
             String name = device.getName();
             if (name != null) settings.setBleName(name);
+            ensureBondReceiver();
             post(() -> {
                 listener.onBackendChanged(false, "蓝牙 · 连接中");
                 listener.onLog("正在连接 " + address + " …");
-                listener.onDetail("若芯片已休眠，请先按设备按键唤醒。");
+                listener.onDetail("请在本应用中完成配对。系统设置里的配对不能保持连接。");
             });
             if (Build.VERSION.SDK_INT >= 23)
                 gatt = device.connectGatt(activity, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
@@ -290,17 +299,26 @@ public final class BleLink {
         }
         scanner = adapter.getBluetoothLeScanner();
         if (scanner == null) return;
+        stopScan();
         synchronized (found) {
             found.clear();
             for (BluetoothDevice device : adapter.getBondedDevices()) {
-                String name = device.getName();
-                if (DEVICE_NAME.equals(name))
-                    found.put(device.getAddress(), new DeviceRow(device.getAddress(), name, true));
+                if (!isInkSight(device, null)) continue;
+                found.put(device.getAddress(), new DeviceRow(device.getAddress(), visibleName(device, null), true));
             }
         }
         publishScan();
         scanning = true;
-        scanner.startScan(null, new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build(), scanCallback);
+        List<ScanFilter> filters = new ArrayList<>();
+        filters.add(new ScanFilter.Builder().setDeviceName(DEVICE_NAME).build());
+        filters.add(new ScanFilter.Builder().setServiceUuid(new ParcelUuid(SVC)).build());
+        try {
+            scanner.startScan(filters, new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build(), scanCallback);
+        } catch (Exception e) {
+            scanning = false;
+            log("扫描失败：" + e.getMessage());
+            return;
+        }
         main.postDelayed(this::stopScan, 15000);
         log("开始扫描 InkSight398 …");
     }
@@ -331,15 +349,19 @@ public final class BleLink {
             });
             writeCtrl(beginCmd(blePacked.length));
             awaitResult(OP_BEGIN, 8000);
-            int chunk = Math.max(20, attPayload);
-            int total = (blePacked.length + chunk - 1) / chunk;
-            for (int offset = 0, part = 0; offset < blePacked.length; offset += chunk, part++) {
+            int offset = 0;
+            int part = 0;
+            while (offset < blePacked.length) {
                 checkCancel();
-                int n = Math.min(chunk, blePacked.length - offset);
+                int n = Math.min(Math.max(20, imgChunk), blePacked.length - offset);
                 writeImg(blePacked, offset, n);
-                if (part % 8 == 0 || part + 1 == total) {
-                    final int done = part + 1;
-                    post(() -> listener.onProgress(done, total));
+                offset += n;
+                part++;
+                int total = (blePacked.length + Math.max(20, imgChunk) - 1) / Math.max(20, imgChunk);
+                if (part % 8 == 0 || offset >= blePacked.length) {
+                    final int done = Math.min(part, total);
+                    final int all = total;
+                    post(() -> listener.onProgress(done, all));
                 }
             }
             writeCtrl(new byte[]{OP_SHOW});
@@ -378,6 +400,8 @@ public final class BleLink {
         cancel = true;
         CountDownLatch latch = resultLatch;
         if (latch != null) latch.countDown();
+        CountDownLatch write = gattLatch;
+        if (write != null) write.countDown();
         if (busy) endBusy(reason);
     }
 
@@ -433,10 +457,12 @@ public final class BleLink {
             listener.onLog("InkSight398 已就绪。");
             listener.onDetail("蓝牙已连接 " + settings.bleName());
         });
-        try {
-            writeCtrl(new byte[]{OP_GET});
-        } catch (Exception ignored) {
-        }
+        new Thread(() -> {
+            try {
+                writeCtrl(new byte[]{OP_GET});
+            } catch (Exception ignored) {
+            }
+        }, "ble-get").start();
     }
 
     private static byte[] beginCmd(int total) {
@@ -455,9 +481,9 @@ public final class BleLink {
             resultLatch = new CountDownLatch(1);
             lastStatus.set(-1);
             lastReq.set(-1);
-            ctrl.setValue(value);
-            ctrl.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-            if (!gatt.writeCharacteristic(ctrl)) throw new IllegalStateException("控制写入失败");
+            int code = submitWrite(ctrl, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+            if (code != 0) throw new IllegalStateException("控制写入失败，状态 " + code);
+            awaitGatt(8000);
         }
     }
 
@@ -467,15 +493,45 @@ public final class BleLink {
         byte[] chunk = new byte[length];
         System.arraycopy(data, offset, chunk, 0, length);
         synchronized (gate) {
-            resultLatch = new CountDownLatch(1);
-            img.setValue(chunk);
-            img.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-            if (!gatt.writeCharacteristic(img)) throw new IllegalStateException("图像写入失败");
-            // Write-without-response may not callback on every stack; small pacing delay.
-            Thread.sleep(8);
-            CountDownLatch latch = resultLatch;
-            if (latch != null) latch.countDown();
+            if (sendImage(chunk)) return;
+            if (length <= 20) throw new IllegalStateException("图像写入失败，长度 " + length);
+            imgChunk = 20;
+            log("大包图像写入被拒绝，改为 20 字节。");
+            for (int i = 0; i < length; i += 20) {
+                checkCancel();
+                int n = Math.min(20, length - i);
+                byte[] small = new byte[n];
+                System.arraycopy(chunk, i, small, 0, n);
+                if (!sendImage(small)) throw new IllegalStateException("图像写入失败，长度 " + n);
+            }
         }
+    }
+
+    /** @return false when the stack did not accept the buffer. The bytes were not sent. */
+    private boolean sendImage(byte[] chunk) throws Exception {
+        int code = submitWrite(img, chunk, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+        if (code != 0) return false;
+        awaitGatt(8000);
+        return true;
+    }
+
+    private int submitWrite(BluetoothGattCharacteristic characteristic, byte[] value, int writeType) {
+        gattLatch = new CountDownLatch(1);
+        gattWriteStatus.set(-1);
+        if (Build.VERSION.SDK_INT >= 33) return gatt.writeCharacteristic(characteristic, value, writeType);
+        characteristic.setValue(value);
+        characteristic.setWriteType(writeType);
+        return gatt.writeCharacteristic(characteristic) ? 0 : 201;
+    }
+
+    private void awaitGatt(long timeoutMs) throws Exception {
+        CountDownLatch latch = gattLatch;
+        if (latch == null || !latch.await(timeoutMs, TimeUnit.MILLISECONDS))
+            throw new IllegalStateException("写入超时");
+        checkCancel();
+        int status = gattWriteStatus.get();
+        if (status != BluetoothGatt.GATT_SUCCESS)
+            throw new IllegalStateException("写入被拒绝，状态 " + status);
     }
 
     private void awaitResult(int op, long timeoutMs) throws Exception {
@@ -498,6 +554,103 @@ public final class BleLink {
 
     private void checkCancel() throws InterruptedException {
         if (cancel) throw new InterruptedException("用户停止");
+    }
+
+    private final BroadcastReceiver bondReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) return;
+            BluetoothDevice device = Build.VERSION.SDK_INT >= 33
+                    ? intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class)
+                    : intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            BluetoothGatt current = gatt;
+            if (device == null || current == null) return;
+            if (!device.getAddress().equals(current.getDevice().getAddress())) return;
+            int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+            int prev = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+            if (state == BluetoothDevice.BOND_BONDED) {
+                log("配对完成");
+                current.requestMtu(517);
+            } else if (state == BluetoothDevice.BOND_NONE && prev == BluetoothDevice.BOND_BONDING) {
+                log("配对被拒绝。请在系统蓝牙中忽略 InkSight398，再从本应用连接。");
+                current.disconnect();
+            }
+        }
+    };
+
+    private void beginAfterBond(BluetoothGatt g) {
+        int bond = g.getDevice().getBondState();
+        if (bond == BluetoothDevice.BOND_BONDED) {
+            g.requestMtu(517);
+            return;
+        }
+        if (bond == BluetoothDevice.BOND_BONDING) {
+            log("配对进行中");
+            return;
+        }
+        boolean started = false;
+        try {
+            started = g.getDevice().createBond();
+        } catch (Exception e) {
+            log("配对失败：" + e.getMessage());
+        }
+        if (!started) {
+            log("未能发起配对，继续发现服务");
+            g.requestMtu(517);
+        }
+    }
+
+    private void ensureBondReceiver() {
+        if (bondReceiverRegistered) return;
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        if (Build.VERSION.SDK_INT >= 33)
+            activity.registerReceiver(bondReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        else
+            activity.registerReceiver(bondReceiver, filter);
+        bondReceiverRegistered = true;
+    }
+
+    private void unregisterBondReceiver() {
+        if (!bondReceiverRegistered) return;
+        bondReceiverRegistered = false;
+        try {
+            activity.unregisterReceiver(bondReceiver);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static String visibleName(BluetoothDevice device, ScanRecord record) {
+        String name = record == null ? null : record.getDeviceName();
+        if (name == null || name.isEmpty()) name = device.getName();
+        if ((name == null || name.isEmpty()) && Build.VERSION.SDK_INT >= 30) name = device.getAlias();
+        return name;
+    }
+
+    private static boolean isInkSight(BluetoothDevice device, ScanRecord record) {
+        if (DEVICE_NAME.equals(visibleName(device, record))) return true;
+        if (record == null) return false;
+        if (record.getServiceUuids() != null) {
+            for (ParcelUuid uuid : record.getServiceUuids()) {
+                if (SVC.equals(uuid.getUuid())) return true;
+            }
+        }
+        byte[] raw = record.getBytes();
+        return raw != null && (indexOf(raw, DEVICE_NAME.getBytes()) >= 0 || indexOf(raw, SVC_LE) >= 0);
+    }
+
+    private static int indexOf(byte[] data, byte[] needle) {
+        if (needle.length == 0 || data.length < needle.length) return -1;
+        for (int i = 0; i <= data.length - needle.length; i++) {
+            boolean same = true;
+            for (int j = 0; j < needle.length; j++) {
+                if (data[i + j] != needle[j]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) return i;
+        }
+        return -1;
     }
 
     private void closeGatt() {

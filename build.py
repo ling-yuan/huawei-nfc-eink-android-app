@@ -84,7 +84,7 @@ def native_path(path):
     value = str(path)
     if is_windows:
         return value
-    if is_wsl and value.startswith("/mnt/"):
+    if windows_tools and value.startswith("/mnt/"):
         return subprocess.check_output(["wslpath", "-w", value], text=True).strip()
     return value
 
