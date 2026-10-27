@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/page_calendar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        style="@style/Text.Section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/calendar_section" />
+
+    <org.nfcresearch.qpolllab.ui.PixelPreview
+        android:id="@+id/calendar_preview"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:background="@drawable/bg_preview"
+        android:contentDescription="@string/calendar_hint" />
+
+    <TextView
+        android:id="@+id/calendar_info"
+        style="@style/Text.Hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/calendar_hint" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btn_prev_month"
+            style="@style/Widget.App.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/calendar_prev" />
+
+        <Button
+            android:id="@+id/btn_this_month"
+            style="@style/Widget.App.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="8dp"
+            android:text="@string/calendar_reset" />
+
+        <Button
+            android:id="@+id/btn_next_month"
+            style="@style/Widget.App.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="8dp"
+            android:text="@string/calendar_next" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btn_import_calendar"
+            style="@style/Widget.App.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/calendar_import" />
+
+        <Button
+            android:id="@+id/btn_calendar_sources"
+            style="@style/Widget.App.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="8dp"
+            android:text="@string/calendar_choose_sources" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="4dp"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <TextView
+                style="@style/Text.Section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_layout_section" />
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_orientation" />
+
+                <Spinner
+                    android:id="@+id/sp_orientation"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_margin_top" />
+
+                <Spinner
+                    android:id="@+id/sp_margin_top"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_margin_bottom" />
+
+                <Spinner
+                    android:id="@+id/sp_margin_bottom"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_margin_left" />
+
+                <Spinner
+                    android:id="@+id/sp_margin_left"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_margin_right" />
+
+                <Spinner
+                    android:id="@+id/sp_margin_right"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Text.Hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cal_margin_hint" />
+
+            <TextView
+                style="@style/Text.Section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_style_section" />
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_week_start" />
+
+                <Spinner
+                    android:id="@+id/sp_week_start"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_today_style" />
+
+                <Spinner
+                    android:id="@+id/sp_today_style"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_weekend_style" />
+
+                <Spinner
+                    android:id="@+id/sp_weekend_style"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_font_title" />
+
+                <Spinner
+                    android:id="@+id/sp_font_title"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_font_week" />
+
+                <Spinner
+                    android:id="@+id/sp_font_week"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_font_date" />
+
+                <Spinner
+                    android:id="@+id/sp_font_date"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_font_agenda" />
+
+                <Spinner
+                    android:id="@+id/sp_font_agenda"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_marker_style" />
+
+                <Spinner
+                    android:id="@+id/sp_marker_style"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row.Option">
+
+                <TextView
+                    style="@style/Text.Option"
+                    android:text="@string/cal_max_agenda" />
+
+                <Spinner
+                    android:id="@+id/sp_max_agenda"
+                    style="@style/Widget.App.Spinner" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/cb_show_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/cal_show_time"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/cb_show_marks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/cal_show_marks"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/cb_show_adjust"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/cal_show_adjust"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/cb_show_border"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/cal_show_border"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <TextView
+                style="@style/Text.Hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/cal_adjust_hint" />
+
+            <Button
+                android:id="@+id/btn_push_calendar"
+                style="@style/Widget.App.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="@string/calendar_push" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

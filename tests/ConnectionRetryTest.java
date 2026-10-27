@@ -1,5 +1,6 @@
 package org.nfcresearch.qpolllab;
 import java.io.IOException;
+import org.nfcresearch.qpolllab.core.ConnectionRetry;
 
 public final class ConnectionRetryTest {
     private static void require(boolean ok){if(!ok)throw new AssertionError();}

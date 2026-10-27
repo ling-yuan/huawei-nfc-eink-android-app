@@ -2,6 +2,8 @@ package org.nfcresearch.qpolllab;
 
 import java.util.*;
 import java.io.*;
+import org.nfcresearch.qpolllab.core.PanelProtocol;
+import org.nfcresearch.qpolllab.image.ImageRaster;
 
 public final class ImageRasterTest {
     private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}

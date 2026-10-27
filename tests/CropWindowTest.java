@@ -1,6 +1,7 @@
 package org.nfcresearch.qpolllab;
 
 import java.util.Random;
+import org.nfcresearch.qpolllab.image.CropWindow;
 
 public final class CropWindowTest {
     private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#F2F5F3</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="field">#E8EEEA</color>
+    <color name="divider">#DFE6E2</color>
+    <color name="primary">#176B61</color>
+    <color name="primary_dark">#0E4B44</color>
+    <color name="text">#12211D</color>
+    <color name="text_secondary">#5B6B65</color>
+    <color name="ok_bg">#E1F0EB</color>
+    <color name="warn">#B3261E</color>
+    <color name="warn_bg">#FBEAE8</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Panel palette. Every preview and rendered page uses only these four colours. -->
+    <color name="eink_black">#FF000000</color>
+    <color name="eink_white">#FFFFFFFF</color>
+    <color name="eink_yellow">#FFF5CD00</color>
+    <color name="eink_red">#FFC80000</color>
+</resources>

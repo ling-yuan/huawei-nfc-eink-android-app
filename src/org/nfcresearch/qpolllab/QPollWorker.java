@@ -19,6 +19,10 @@ import java.lang.reflect.Proxy;
 import java.nio.channels.FileLock;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.nfcresearch.qpolllab.core.ChipInfo;
+import org.nfcresearch.qpolllab.core.ConnectionRetry;
+import org.nfcresearch.qpolllab.core.NciDiscovery;
+import org.nfcresearch.qpolllab.core.PanelSession;
 
 /** Bounded root helper for observation, identity reads, and explicitly requested image refresh. */
 public final class QPollWorker {

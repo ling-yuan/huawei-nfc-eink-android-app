@@ -1,6 +1,8 @@
 package org.nfcresearch.qpolllab;
 
 import java.util.Arrays;
+import org.nfcresearch.qpolllab.core.PanelProtocol;
+import org.nfcresearch.qpolllab.image.ImageBlocks;
 
 public final class ImageBlocksTest {
     private static final int[] P={0xff000000,0xffffffff,0xfff5cd00,0xffc80000};

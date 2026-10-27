@@ -1,4 +1,5 @@
 package org.nfcresearch.qpolllab;
+import org.nfcresearch.qpolllab.core.NciDiscovery;
 public final class NciDiscoveryTest {
     private static void check(boolean value){if(!value)throw new AssertionError();}
     public static void main(String[] args){

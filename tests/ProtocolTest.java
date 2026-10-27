@@ -3,6 +3,7 @@ package org.nfcresearch.qpolllab;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import org.nfcresearch.qpolllab.core.PanelProtocol;
 
 /** Hardware-free behavioral tests; all writes terminate at this fake transport. */
 public final class ProtocolTest {

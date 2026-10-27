@@ -1,5 +1,7 @@
 package org.nfcresearch.qpolllab;
 
+import org.nfcresearch.qpolllab.core.SessionFailure;
+
 public final class SessionFailureTest {
     private static void require(boolean ok){if(!ok)throw new AssertionError();}
     public static void main(String[] args){

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">墨水屏</string>
+
+    <string name="tab_image">图片</string>
+    <string name="tab_calendar">日程</string>
+    <string name="tab_settings">配置</string>
+
+    <string name="chip_backend_idle">连接 · 未就绪</string>
+    <string name="chip_panel_idle">墨水屏 · 未检测</string>
+    <string name="status_hint">先选择连接方式并完成连接，再推送图片或日程。</string>
+    <string name="action_logs">日志</string>
+    <string name="action_stop">停止</string>
+
+    <string name="image_section">上传图片</string>
+    <string name="image_hint">预览与屏幕一致：仅黑、白、黄、红四色。</string>
+    <string name="image_choose">选择图片</string>
+    <string name="image_fit">显示方式</string>
+    <string name="image_fit_letterbox">留白</string>
+    <string name="image_fit_cover">填充</string>
+    <string name="image_rotation">旋转角度</string>
+    <string name="image_crop">裁剪图片</string>
+    <string name="image_reset_defaults">还原默认设置</string>
+    <string name="image_delete">删除当前图片</string>
+    <string name="image_binary">黑白二值化</string>
+    <string name="image_threshold">二值化阈值：%1$d</string>
+    <string name="image_blocks">图像简化</string>
+    <string name="image_dither">抖动处理（细碎色点更多）</string>
+    <string name="image_push_section">推送到墨水屏</string>
+    <string name="image_carousel">多图轮播（仅蓝牙）</string>
+    <string name="image_carousel_hint">轮播仅在蓝牙已连接时由手机定时推送。NFC 模式无法轮播。</string>
+    <string name="image_carousel_interval">间隔</string>
+    <string name="image_push">推送当前图片到墨水屏</string>
+
+    <string name="calendar_section">日历日程</string>
+    <string name="calendar_hint">读取手机日历中的当月日程，按下方配置渲染为四色图片。</string>
+    <string name="calendar_prev">上月</string>
+    <string name="calendar_reset">当月</string>
+    <string name="calendar_next">下月</string>
+    <string name="calendar_import">导入 / 刷新当月日程</string>
+    <string name="calendar_choose_sources">选择日历来源</string>
+    <string name="calendar_layout_section">版面与留白</string>
+    <string name="calendar_style_section">内容与字体</string>
+    <string name="cal_orientation">显示方向</string>
+    <string name="cal_margin_top">上边缘留白</string>
+    <string name="cal_margin_bottom">下边缘留白</string>
+    <string name="cal_margin_left">左边缘留白</string>
+    <string name="cal_margin_right">右边缘留白</string>
+    <string name="cal_margin_hint">留白以屏幕像素计，上下左右可分别设置；选择横向方向时版面会自动改为 768×552。</string>
+    <string name="cal_week_start">每周起始日</string>
+    <string name="cal_today_style">当日标注样式</string>
+    <string name="cal_weekend_style">周末标注样式</string>
+    <string name="cal_font_title">标题字号</string>
+    <string name="cal_font_week">星期字号</string>
+    <string name="cal_font_date">日期字号</string>
+    <string name="cal_font_agenda">日程字号</string>
+    <string name="cal_marker_style">日程标记样式</string>
+    <string name="cal_max_agenda">日程列表最多条数</string>
+    <string name="cal_show_time">显示日程时间</string>
+    <string name="cal_show_marks">日期下方显示日程标记</string>
+    <string name="cal_show_adjust">显示节假日 / 调休标记</string>
+    <string name="cal_show_border">显示日历边框</string>
+    <string name="cal_adjust_hint">红色角标为法定放假，黑色角标为调休上班日；数据来自国务院公布的节假日安排，已内置 2025 与 2026 年。</string>
+    <string name="calendar_push">推送日程到墨水屏</string>
+
+    <string name="settings_section">连接与芯片</string>
+    <string name="settings_link_mode">连接方式</string>
+    <string name="settings_panel_type">屏幕类型</string>
+    <string name="settings_panel_hint">按实物选择 A0 或 A1。蓝牙侧写入芯片握手；NFC 侧用于像素重排。</string>
+    <string name="settings_idle">保持连接时间（芯片空闲休眠）</string>
+    <string name="settings_push_config">推送配置到芯片</string>
+    <string name="settings_app_info">打开应用信息（自启动等）</string>
+    <string name="settings_nfc_section">Shizuku + NFC</string>
+    <string name="settings_backend_shizuku">Shizuku · 免 Root</string>
+    <string name="settings_backend_root">Root</string>
+    <string name="settings_connect">Shizuku 授权 / 连接</string>
+    <string name="settings_inspect">检查芯片 / NFC</string>
+    <string name="settings_qpoll">Q-Poll 能力测试</string>
+    <string name="settings_standard">普通 NFC-A 对照</string>
+    <string name="settings_scan_seconds">测试寻卡时长</string>
+    <string name="settings_protocol">传输参数</string>
+    <string name="settings_power">上电等待时间</string>
+    <string name="settings_poll">状态查询间隔</string>
+    <string name="settings_restore">恢复默认参数</string>
+    <string name="settings_calendar_auto">日程变更时自动推送（仅蓝牙）</string>
+    <string name="settings_calendar_auto_hint">已连接蓝牙时监听日历变更并推送当月预览。NFC 模式只更新预览。</string>
+
+    <string name="settings_logs">运行日志</string>
+    <string name="settings_copy">复制日志</string>
+    <string name="settings_clear">清空日志</string>
+    <string name="settings_about">参考项目与许可证</string>
+    <string name="settings_version">墨水屏 v3.1</string>
+
+    <string name="action_cancel">取消</string>
+    <string name="action_ok">确定</string>
+    <string name="action_close">关闭</string>
+</resources>

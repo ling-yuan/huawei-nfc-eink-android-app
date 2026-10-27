@@ -8,8 +8,6 @@ The factory image scan layout and D3/D4 protocol implementation were adapted wit
 
 Protocol research also used solar2ain/ink-nfc-fmsc-by-pn532, commit `0f88cb315eab60e538c102e5883c5f957d9c1be0` (GPL-3.0-or-later), including the published D8/APDU definitions and LZO1X literal-stream format. No Python modules or native binaries from that project are embedded. The local reference checkout retains its license. The Android literal encoder implements the literal length prefix and LZO end marker directly; its output is independently tested with lzokay.
 
-The v2.10-test1 panel selector and Java layout implementation also use the published Huawei A0 even/odd controller-row mapping and A1 linear layout as protocol references from that checkout (`images.py`, `catalog.py`, `_assets/drivers.json`). Full-frame scan-01 output was compared byte-for-byte against its `pack_indices` function. Its DB/DA driver recipes are not embedded or written by this app; the board's stored driver is retained.
-
 The Android port adds Root/Binder Q-Poll discovery, ISO-DEP transport, target/profile gates, immutable image snapshots, Android image selection/preview, cancellation, and stricter refresh-state reporting. It does not ship PN532 serial transport, replacement display drivers, or vendor test images. The built-in test pattern is drawn locally.
 
 lzokay is used only by the host-side test script and is not part of the APK.
