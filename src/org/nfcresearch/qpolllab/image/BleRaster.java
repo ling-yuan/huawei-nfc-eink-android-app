@@ -5,7 +5,7 @@ import org.nfcresearch.qpolllab.core.PanelProtocol;
 /**
  * Packs a 552×768 logical page into the InkSight BLE wire format:
  * 768×552, row-major, 4 pixels per byte, MSB first, row 0 at the top.
- * Firmware mirrors each row horizontally before SPI; the phone must not mirror.
+ * Columns stay left to right. The panel must not mirror this buffer.
  */
 public final class BleRaster {
     /** Clockwise degrees applied before packing. Change only this if the screen is upside-down. */
